@@ -122,4 +122,56 @@ questionsRouter.delete("/:id", async (req, res) => {
   });
 });
 
+questionsRouter.post("/:id/upvote", async (req, res) => {
+  const newUpVote = {
+    ...req.body,
+    created_at: new Date(),
+    updated_at: new Date(),
+    published_at: new Date(),
+  };
+  const questionId = req.params.id;
+
+  try {
+    await connectionPool.query(
+      `insert into question_votes (question_id,vote)
+      values ($1, $2)`,
+      [questionId, newUpVote.vote]
+    );
+  } catch {
+    return res.status(500).json({
+      message: "Server could not create vote because database connection",
+    });
+  }
+
+  return res.status(200).json({
+    message: "OK: Successfully upvoted the answer",
+  });
+});
+
+questionsRouter.post("/:id/downvote", async (req, res) => {
+  const newDownvote = {
+    ...req.body,
+    created_at: new Date(),
+    updated_at: new Date(),
+    published_at: new Date(),
+  };
+  const questionId = req.params.id;
+
+  try {
+    await connectionPool.query(
+      `insert into question_votes (question_id,vote)
+      values ($1, $2)`,
+      [questionId, newDownvote.vote]
+    );
+  } catch {
+    return res.status(500).json({
+      message: "Server could not create vote because database connection",
+    });
+  }
+
+  return res.status(200).json({
+    message: "OK: Successfully upvoted the answer",
+  });
+});
+
 export default questionsRouter;

@@ -32,7 +32,7 @@ answersRouter.post(
   }
 );
 
-answersRouter.get("/questions/:id/answers", async (req, res)=>{
+answersRouter.get("/questions/:id/answers", async (req, res) => {
   const questionId = req.params.id;
   let results;
   try {
@@ -56,43 +56,73 @@ answersRouter.get("/questions/:id/answers", async (req, res)=>{
   });
 });
 
-answersRouter.delete("/questions/:id", async(req, res)=>{
+answersRouter.delete("/questions/:id", async (req, res) => {
   const questionId = req.params.id;
-  try{
+  try {
     await connectionPool.query(
       `delete from answers
       where question_id=$1`,
       [questionId]
     );
-  }catch {
+  } catch {
     return res.status(500).json({
-      message: "Server could not delete content because database connection"
-    })
+      message: "Server could not delete content because database connection",
+    });
   }
-  
+
   return res.status(200).json({
     message: "Deleted assignment sucessfully",
   });
 });
 
-answersRouter.post("/answers/:id/upvote", async(req, res)=>{
+answersRouter.post("/answers/:id/upvote", async (req, res) => {
+  const newUpVote = {
+    ...req.body,
+    created_at: new Date(),
+    updated_at: new Date(),
+    published_at: new Date(),
+  };
   const answersId = req.params.id;
-  try{
+
+  try {
     await connectionPool.query(
-      `update answer_votes 
-      set vote = 3 
-      where answer_id = $1`,
-      [answersId]
+      `insert into answer_votes (answer_id,vote)
+      values ($1, $2)`,
+      [answersId, newUpVote.vote]
     );
-  }catch {
-    return res.status(404).json({
-      message: "Not Found: Answer not found"
-    })
+  } catch {
+    return res.status(500).json({
+      message: "Server could not create vote because database connection",
+    });
   }
   return res.status(200).json({
-    message: "OK: Successfully upvoted the answer"
+    message: "OK: Successfully upvoted the answer",
   });
-})
+});
 
+answersRouter.post("/answers/:id/downvote", async (req, res) => {
+  const newDownvote = {
+    ...req.body,
+    created_at: new Date(),
+    updated_at: new Date(),
+    published_at: new Date(),
+  };
+  const answersId = req.params.id;
+
+  try {
+    await connectionPool.query(
+      `insert into answer_votes (answer_id,vote)
+      values ($1, $2)`,
+      [answersId, newDownvote.vote]
+    );
+  } catch {
+    return res.status(500).json({
+      message: "Server could not create vote because database connection",
+    });
+  }
+  return res.status(200).json({
+    message: "OK: Successfully upvoted the answer",
+  });
+});
 
 export default answersRouter;
